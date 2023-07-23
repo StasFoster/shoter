@@ -7,7 +7,8 @@ public class enemy : MonoBehaviour
 {
     Rigidbody _enemy;
     NavMeshAgent _agent;
-    public float pauer, radius, dir_pos;
+    public float pauer, radius, dir;
+    float dir_pos;
     public Rigidbody player;
     public static bool impact = false;
     bool flag = false;
@@ -42,7 +43,7 @@ public class enemy : MonoBehaviour
     public void move_to_player()
     {
         dir_pos = (Player.pos_player - start_pos).magnitude;
-        if (dir_pos > 10)
+        if (dir_pos > dir)
         {
             _agent.SetDestination(start_pos);
         }

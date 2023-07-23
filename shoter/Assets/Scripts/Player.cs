@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -8,6 +10,9 @@ public class Player : MonoBehaviour
     Ray to_floor;
     public static Vector3 pos_player;
     public float speed;
+    public float len_atack;
+    bool atack_mode = false;
+    public TextMeshProUGUI test;
     private void Start()
     {
         player_ = GetComponent<Rigidbody>();
@@ -15,10 +20,12 @@ public class Player : MonoBehaviour
     }
     private void Update()
     {
+        
         if (mananger.gamemode)
         {
             getposition();
-            Move();     
+            Move();
+            atack();
         }
         player_.WakeUp();
     }
@@ -36,6 +43,37 @@ public class Player : MonoBehaviour
         if (!enemy.impact)
         {
             player_.velocity = new Vector3(-Input.GetAxis("Horizontal") * speed, player_.velocity.y, -Input.GetAxis("Vertical") * speed);
+        }
+    }
+    public void atack()
+    {
+        if (atack_bonus.flag) 
+        {
+            atack_mode = true;
+        }
+        if (atack_mode)
+        {
+            List<GameObject> enemylist = new List<GameObject>(); 
+            enemylist.AddRange(GameObject.FindGameObjectsWithTag("enemy"));
+            GameObject neares_enemy = null;
+            float min_dir = 100000000;
+            foreach(GameObject i in enemylist)
+            {
+                float dir = (i.transform.position - pos_player).magnitude;
+                neares_enemy = dir < min_dir ? i : neares_enemy;
+                min_dir = dir < min_dir ? dir : min_dir;
+                
+            }
+            test.text = enemylist.Count.ToString();
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (min_dir < len_atack)
+                {
+                    Destroy(neares_enemy);
+                    atack_mode = false;
+                    atack_bonus.flag = false;
+                }
+            }
         }
     }
 }

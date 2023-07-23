@@ -7,7 +7,7 @@ public class mananger : MonoBehaviour
 {
     public static bool gamemode;
     public static bool menumode;
-    public GameObject menu, gamescene, enemy, player;
+    public GameObject menu, gamescene, enemy, player, atackbonus;
     List<GameObject> enemyList = new List<GameObject>();
     Vector3 start_pos;
     private void Start()
@@ -30,9 +30,11 @@ public class mananger : MonoBehaviour
     }
     public void Spawn()
     {
-        for(int i = 1; i < 2; i++)
+        GameObject a = Instantiate(atackbonus, gamescene.transform.Find("atack").transform.position, Quaternion.identity);
+        enemyList.Add(a);
+        for (int i = 1; i < 7; i++)
         {
-            GameObject a = Instantiate(enemy, gamescene.transform.Find(i.ToString()).transform.position, Quaternion.identity);
+            a = Instantiate(enemy, gamescene.transform.Find(i.ToString()).transform.position, Quaternion.identity);
             enemyList.Add(a);
         }
     }
