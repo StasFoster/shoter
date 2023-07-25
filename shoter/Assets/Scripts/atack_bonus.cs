@@ -2,33 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class atack_bonus : MonoBehaviour
+public class atack_bonus : MonoBehaviour, IDeath_from_player
 {
     public static bool flag = false;
-    private void Start()
+    private void Update()
     {
-        StartCoroutine(Time_active());
+        Death();
     }
-
     private void OnTriggerEnter(Collider other)
     {
         flag = true;
-        this.gameObject.SetActive(false);
+        gameObject.SetActive(false);
     }
     private void OnTriggerExit(Collider other)
     {
         flag = false;
     }
-    public IEnumerator Time_active()
+    public void Death()
     {
-        int n = 0;
-        while (true)
+        if (!mananger.gamemode)
         {
-            if(n % 10 == 0)
-            {
-                this.gameObject.SetActive(true);
-            }
-            yield return new WaitForSeconds(1);
+            Destroy(gameObject);
         }
     }
 }

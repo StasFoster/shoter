@@ -8,11 +8,11 @@ public class Player : MonoBehaviour
 {
     Rigidbody player_;
     Ray to_floor;
+    int len;
     public static Vector3 pos_player;
     public float speed;
     public float len_atack;
     bool atack_mode = false;
-    public TextMeshProUGUI test;
     private void Start()
     {
         player_ = GetComponent<Rigidbody>();
@@ -56,6 +56,8 @@ public class Player : MonoBehaviour
             List<GameObject> enemylist = new List<GameObject>(); 
             enemylist.AddRange(GameObject.FindGameObjectsWithTag("enemy"));
             GameObject neares_enemy = null;
+            len = enemylist.Count;
+            
             float min_dir = 100000000;
             foreach(GameObject i in enemylist)
             {
@@ -64,7 +66,6 @@ public class Player : MonoBehaviour
                 min_dir = dir < min_dir ? dir : min_dir;
                 
             }
-            test.text = enemylist.Count.ToString();
             if (Input.GetMouseButtonDown(0))
             {
                 if (min_dir < len_atack)
@@ -72,8 +73,14 @@ public class Player : MonoBehaviour
                     Destroy(neares_enemy);
                     atack_mode = false;
                     atack_bonus.flag = false;
+                    if (enemylist.Count <= 1)
+                    {
+                        mananger.win = true;
+                        mananger.n++;
+                    }
                 }
             }
         }
+
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class enemy : MonoBehaviour
+public class enemy : MonoBehaviour, IDeath_from_player
 {
     Rigidbody _enemy;
     NavMeshAgent _agent;
@@ -20,6 +20,10 @@ public class enemy : MonoBehaviour
     private void OnCollisionExit(Collision collision)
     {
         flag = false;
+    }
+    private void OnCollisionStay(Collision collision)
+    {
+        flag = true;
     }
     private void Start()
     {
@@ -39,6 +43,7 @@ public class enemy : MonoBehaviour
                 flag = false;
             }
         }
+        Death();
     }
     public void move_to_player()
     {
@@ -58,5 +63,13 @@ public class enemy : MonoBehaviour
         player.AddExplosionForce(pauer, transform.position, radius);  
         yield return new WaitForSeconds(1f);
         impact = false;
+    }
+
+    public void Death()
+    {
+        if (mananger.menumode)
+        {
+            Destroy(this.gameObject);
+        }
     }
 }
