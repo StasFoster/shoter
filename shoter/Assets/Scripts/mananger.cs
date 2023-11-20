@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
 public class mananger : MonoBehaviour
 {
     public static bool gamemode;
-    public static bool menumode;
+
     public static bool win = false;
-    public static int n = -1;
+    public static int n = 0;
     public GameObject menu, gamescene, _enemy, player, atackbonus;
-    public Rigidbody _player;
+    public int amountEnemy, amountAtack;
     List<GameObject> enemyList = new List<GameObject>();
     Vector3 start_pos;
+    public static Action gamemode_Event;
     private void Start()
     {
+        gamemode_Event += () => gamemode = !gamemode;
         gamemode = false;
-        menumode = true;
         start_pos = player.transform.position;
     }
     private void Update()
@@ -32,13 +34,9 @@ public class mananger : MonoBehaviour
     }
     public void start_game()
     {
-        gamemode = true;
-        menumode = false;
+        gamemode_Event.Invoke();
         Spawn();
         menu.SetActive(false);
-        player.transform.position = start_pos;
-        _player.isKinematic = true;
-        _player.isKinematic = false;
         enemy.impact = false;
     }
     public IEnumerator Time_active(GameObject atack_bonus)
@@ -56,9 +54,12 @@ public class mananger : MonoBehaviour
     }
     public void Spawn()
     {
-        GameObject a = Instantiate(atackbonus, gamescene.transform.Find("atack").transform.position, Quaternion.identity);
-        StartCoroutine(Time_active(a));
-        for (int i = 1; i < 7; i++)
+        for(int i = 1; i < amountAtack + 1; i++)
+        {
+            GameObject a = Instantiate(atackbonus, gamescene.transform.Find("atack" + i.ToString()).transform.position, Quaternion.identity);
+            StartCoroutine(Time_active(a));
+        }
+        for (int i = 1; i < amountEnemy + 1; i++)
         {
             Instantiate(_enemy, gamescene.transform.Find(i.ToString()).transform.position, Quaternion.identity);
         }
@@ -67,15 +68,16 @@ public class mananger : MonoBehaviour
     {
         if (player.transform.position.y <= -10)
         {
-            gamemode = false;
-            menumode = true;
+            if (gamemode) gamemode_Event.Invoke();
             menu.SetActive(true);
             StopAllCoroutines();
+            player.transform.position = start_pos;
         }
     }
     public void endgame_win()
     {
         StopAllCoroutines();
+        n++;
         SceneManager.LoadScene(n);
     }
 }

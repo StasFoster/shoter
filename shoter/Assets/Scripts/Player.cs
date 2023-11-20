@@ -1,50 +1,67 @@
 using System.Collections;
 using System.Collections.Generic;
-using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(MeshCollider))]
 public class Player : MonoBehaviour
 {
-    Rigidbody player_;
+    Rigidbody player_rig;
+    public GameObject camera;
     Ray to_floor;
     int len;
     public static Vector3 pos_player;
-    public float speed;
-    public float len_atack;
-    bool atack_mode = false;
+    float len_atack, mouse_sen = 10f, mouse, mouseX, mouseY, xrot, yrot;
+    bool atack_mode = false, active = false, impact = false;
+    
     private void Start()
     {
-        player_ = GetComponent<Rigidbody>();
-       
+        SubscribeEvent();
+        player_rig = GetComponent<Rigidbody>();
+        GetComponent<MeshCollider>().convex = true;
     }
     private void Update()
     {
-        
-        if (mananger.gamemode)
+        if (active)
         {
             getposition();
-            Move();
+            MovePos();
             atack();
+            MoveMouse();
+            Shot();
         }
-        player_.WakeUp();
-    }
-    public void getposition()
-    {
-        to_floor = new Ray(player_.transform.position, Vector3.down);
-        RaycastHit hit;
-        if (Physics.Raycast(to_floor, out hit)) 
+        else
         {
-            pos_player = hit.point;
+            mouseX = 0;                       
+            mouseY = 0;
+            xrot = 0;
+            yrot = 0;
         }
+        player_rig.WakeUp();
     }
-    public void Move()
+    // основные методы ..........................................................................................................................
+    public void MovePos()
     {
-        if (!enemy.impact)
+        if (!impact)
         {
-            player_.velocity = new Vector3(-Input.GetAxis("Horizontal") * speed, player_.velocity.y, -Input.GetAxis("Vertical") * speed);
+            transform.Translate(new Vector3(Input.GetAxis("Horizontal"), -Input.GetAxis("Vertical"),0) * 10f * Time.deltaTime); // прердвижение в направлениии
         }
     }
+    void MoveMouse()
+    {
+        xrot += Input.GetAxis("Mouse X") * mouse_sen;
+        yrot += Input.GetAxis("Mouse Y") * mouse_sen;
+        mouseX = Mathf.SmoothDamp(xrot, mouseX, ref mouse, 0.1f);
+        mouseY = Mathf.SmoothDamp(yrot, mouseY, ref mouse, 0.1f); 
+        transform.rotation = Quaternion.Euler(-90f, xrot, 0f);
+        camera.transform.rotation = Quaternion.Euler(mouseY > 90 ? -90 : mouseY < -90 ? 90 : -mouseY, mouseX, 0f);
+    }
+    void SubscribeEvent() //Здесь будет происходить подписка на события которые будут менять какинто значения в Player
+    {
+        mananger.gamemode_Event += () => active = !active;
+        enemy.Impact_Event += () => impact = !impact;
+    }
+    //...........................................................................................................................................
+    // методы для данной игры/////////////////////////////////////////////////////////
     public void atack()
     {
         if (atack_bonus.flag) 
@@ -81,6 +98,29 @@ public class Player : MonoBehaviour
                 }
             }
         }
+    } // рефакторинг
+    public void getposition()
+    {
+        to_floor = new Ray(player_rig.transform.position, Vector3.down);
+        RaycastHit hit;
+        if (Physics.Raycast(to_floor, out hit)) 
+        {
+            pos_player = hit.point;
+        }
+    }    // рефакторинг
+    void Shot()
+    {
+        Ray ray = new Ray(camera.transform.position, camera.transform.forward * 20f);  // направление оносительно САМОГО ОБЪЕКТА а не в общем
+        Debug.DrawRay(camera.transform.position, camera.transform.forward * 20f, Color.red);
+        RaycastHit hit;
+        if(Physics.Raycast(ray, out hit) && Input.GetMouseButtonDown(0))
+        {
+            hit.rigidbody.AddForce(camera.transform.forward * 10f);
+        }
+    }
+    void VisionNPS()
+    {
 
     }
+    /////////////////////////////////////////////////////////////////////////////////////////
 }

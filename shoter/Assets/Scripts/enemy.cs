@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using System;
 
 public class enemy : MonoBehaviour, IDeath_from_player
 {
@@ -13,6 +14,8 @@ public class enemy : MonoBehaviour, IDeath_from_player
     public static bool impact = false;
     bool flag = false;
     Vector3 start_pos;
+    public static Action Impact_Event;
+
     private void OnCollisionEnter(Collision collision)
     {
        flag = true;
@@ -27,6 +30,7 @@ public class enemy : MonoBehaviour, IDeath_from_player
     }
     private void Start()
     {
+        Impact_Event += () => impact = !impact;
         start_pos = transform.position;
         _enemy = GetComponent<Rigidbody>();
         _agent = GetComponent<NavMeshAgent>();
@@ -36,7 +40,7 @@ public class enemy : MonoBehaviour, IDeath_from_player
     {    
         if (mananger.gamemode)
         {   
-            move_to_player();
+            //move_to_player();
             if (flag && !impact)
             {
                 StartCoroutine(ForceAtPlayer());
@@ -59,15 +63,15 @@ public class enemy : MonoBehaviour, IDeath_from_player
     }
     public IEnumerator ForceAtPlayer()
     {
-        impact = true;
+        Impact_Event.Invoke();
         player.AddExplosionForce(pauer, transform.position, radius);  
         yield return new WaitForSeconds(1f);
-        impact = false;
+        Impact_Event.Invoke();
     }
 
     public void Death()
     {
-        if (mananger.menumode)
+        if (!mananger.gamemode)
         {
             Destroy(this.gameObject);
         }
